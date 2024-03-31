@@ -1,0 +1,14 @@
+android_app_import {
+
+    name: "EinkService",
+
+    apk: "app/build/outputs/apk/release/app-release-unsigned.apk",
+
+    presigned: false,
+    privileged: true,
+    certificate : "platform",
+
+    dex_preopt: {
+        enabled: false,
+    },
+}

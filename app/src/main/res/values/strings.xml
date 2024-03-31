@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Eink Center</string>
+    <string name="eink_accessibility_service">Eink Service</string>
+</resources>
