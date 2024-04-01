@@ -67,7 +67,7 @@ private fun AccessibilityNotice(onClicked: () -> Unit) {
         )
     ){
         Column(modifier = Modifier.padding(8.dp)) {
-            Text("Tap here to activate Eink Center in Settings > Accessibility > Eink Center.", fontWeight = FontWeight.Bold)
+            Text("Tap here to activate Eink Center in Settings > Accessibility Services", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -81,7 +81,7 @@ private fun OverlayNotice(onClicked: () -> Unit) {
         )
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            Text("In order to show the speed selector on top of any app, we need overlay permissions for that. Tap here to grant access.", fontWeight = FontWeight.Bold)
+            Text("Tap here to grant overlay permission. We need it to show the speed selector on top of any app.", fontWeight = FontWeight.Bold)
         }
     }
 }

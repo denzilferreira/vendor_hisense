@@ -1,6 +1,7 @@
 package com.hisense.einkservice
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.view.Gravity
@@ -19,9 +20,16 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.hisense.einkservice.model.EinkApp
+import com.hisense.einkservice.repository.EinkAppDatabase
+import com.hisense.einkservice.repository.EinkAppRepository
+import com.hisense.einkservice.repository.EinkAppRepositoryImpl
 import com.hisense.einkservice.ui.theme.HisenseTheme
 import com.hisense.einkservice.ui.views.EinkOverlay
 import com.hisense.einkservice.ui.views.MyLifecycleOwner
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class EinkAccessibility : AccessibilityService() {
 
@@ -29,6 +37,9 @@ class EinkAccessibility : AccessibilityService() {
 
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
+    private lateinit var repository: EinkAppRepository
+
+    private var currentApp: String = ""
 
     private val overlayParams = WindowManager.LayoutParams().apply {
         type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
@@ -43,8 +54,20 @@ class EinkAccessibility : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            val packageName = event.packageName.toString()
-            // TODO: look-up preferred speed and set automatically
+            currentApp = event.packageName.toString()
+
+            if (currentApp.isNotEmpty()) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val einkApp = repository.getByPackageName(currentApp)
+                    if (einkApp != null) {
+                        einkService.setSpeed(einkApp.preferredSpeed)
+                    } else {
+                        val newApp = EinkApp(currentApp, EinkSpeed.BALANCED.getSpeed())
+                        repository.insert(newApp)
+                        einkService.setSpeed(EinkSpeed.BALANCED.getSpeed())
+                    }
+                }
+            }
         }
     }
 
@@ -72,20 +95,16 @@ class EinkAccessibility : AccessibilityService() {
             setContent {
                 EinkOverlay(
                     onClear = {
-                        einkService.setSpeed(EinkSpeed.CLEAR.getSpeed())
-                        overlayView.visibility = View.GONE
+                        setSpeedForApp(currentApp, EinkSpeed.CLEAR.getSpeed())
                     },
                     onBalanced = {
-                        einkService.setSpeed(EinkSpeed.BALANCED.getSpeed())
-                        overlayView.visibility = View.GONE
+                        setSpeedForApp(currentApp, EinkSpeed.BALANCED.getSpeed())
                     },
                     onSmooth = {
-                        einkService.setSpeed(EinkSpeed.SMOOTH.getSpeed())
-                        overlayView.visibility = View.GONE
+                        setSpeedForApp(currentApp, EinkSpeed.SMOOTH.getSpeed())
                     },
                     onFast = {
-                        einkService.setSpeed(EinkSpeed.FAST.getSpeed())
-                        overlayView.visibility = View.GONE
+                        setSpeedForApp(currentApp, EinkSpeed.FAST.getSpeed())
                     }
                 )
             }
@@ -122,6 +141,22 @@ class EinkAccessibility : AccessibilityService() {
         overlayView.visibility = View.GONE // hide by default
     }
 
+    private fun setSpeedForApp(packageName: String, speed: Int) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val einkApp = repository.getByPackageName(packageName)
+            if (einkApp != null) {
+                einkApp.preferredSpeed = speed
+                repository.update(einkApp)
+            } else {
+                val newApp = EinkApp(packageName, speed)
+                repository.insert(newApp)
+            }
+            einkService.setSpeed(speed)
+        }
+
+        overlayView.visibility = View.GONE
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         isRunning = true
         return super.onStartCommand(intent, flags, startId)
@@ -130,6 +165,7 @@ class EinkAccessibility : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         isRunning = true
+        repository = getRepository(applicationContext)
     }
 
     override fun onInterrupt() {
@@ -143,6 +179,9 @@ class EinkAccessibility : AccessibilityService() {
 
     companion object {
         var isRunning: Boolean = false
+        fun getRepository(context: Context): EinkAppRepository {
+            return EinkAppRepositoryImpl(EinkAppDatabase.getInstance(context).einkAppDao())
+        }
     }
 }
 
