@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-    id('kotlin-kapt')
+    //id('kotlin-kapt')
     //id("com.android.library")
 }
 
@@ -38,6 +38,7 @@ android {
     buildFeatures {
         compose true
         aidl true
+        dataBinding true
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.1'
@@ -64,7 +65,7 @@ dependencies {
     implementation libs.androidx.material3
     implementation libs.androidx.lifecycle.viewmodel.compose
     implementation libs.androidx.room.runtime
-    kapt libs.androidx.room.compiler
+    annotationProcessor libs.androidx.room.compiler
     implementation libs.androidx.room.ktx
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
