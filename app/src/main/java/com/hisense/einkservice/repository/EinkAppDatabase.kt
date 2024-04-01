@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.hisense.einkservice.model.EinkApp
 
-@Database(entities = [EinkApp::class], version = 1)
+@Database(entities = [EinkApp::class], version = 1, exportSchema = false)
 abstract class EinkAppDatabase : RoomDatabase() {
     abstract fun einkAppDao(): EinkAppDao
 

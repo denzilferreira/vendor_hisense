@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-    //id('kotlin-kapt')
+    id('kotlin-kapt')
     //id("com.android.library")
 }
 
@@ -65,7 +65,7 @@ dependencies {
     implementation libs.androidx.material3
     implementation libs.androidx.lifecycle.viewmodel.compose
     implementation libs.androidx.room.runtime
-    annotationProcessor libs.androidx.room.compiler
+    kapt libs.androidx.room.compiler
     implementation libs.androidx.room.ktx
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
