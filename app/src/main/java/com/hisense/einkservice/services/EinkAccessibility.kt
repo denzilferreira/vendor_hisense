@@ -195,7 +195,7 @@ class EinkAccessibility : AccessibilityService() {
             return EinkAppRepositoryImpl(EinkAppDatabase.getInstance(context).einkAppDao())
         }
 
-        fun service() = IEinkServiceInterfaceImpl()
+        fun einkService() = IEinkServiceInterfaceImpl()
     }
 }
 

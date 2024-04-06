@@ -18,11 +18,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hisense.einkservice.model.EinkApp
+import com.hisense.einkservice.services.EinkAccessibility
 import com.hisense.einkservice.ui.theme.HisenseTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,10 +49,10 @@ fun EinkMainActivityScreen(
         content = { innerPadding ->
             Column(
                 modifier =
-                    Modifier
-                        .padding(innerPadding)
-                        .padding(16.dp)
-                        .fillMaxSize(),
+                Modifier
+                    .padding(innerPadding)
+                    .padding(16.dp)
+                    .fillMaxSize(),
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -61,7 +66,10 @@ fun EinkMainActivityScreen(
                 }
                 AppsList(apps = apps)
                 Spacer(modifier = Modifier.weight(1f))
-                Text("Copyright © 2021 Denzil Ferreira", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    "Copyright © 2021 Denzil Ferreira",
+                    style = MaterialTheme.typography.labelSmall
+                )
             }
         },
     )
@@ -70,12 +78,26 @@ fun EinkMainActivityScreen(
 @Composable
 private fun AppsList(apps: List<EinkApp>) {
     val lazyListState = rememberLazyListState()
+    val context = LocalContext.current
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         state = lazyListState,
     ) {
         items(apps.size) { index ->
-            EinkAppItemView(item = apps[index], onSetNewSpeed = {})
+            val item = apps[index]
+            EinkAppItemView(
+                item = item,
+                onSetNewSpeed = { newSpeed ->
+                    val repository = EinkAccessibility.getRepository(context)
+                    val einkApp = repository.getByPackageName(item.packageName)
+                    einkApp?.let {
+                        einkApp.preferredSpeed = newSpeed.getSpeed()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            repository.update(einkApp)
+                        }
+                    }
+                }
+            )
         }
     }
 }
@@ -85,12 +107,15 @@ private fun AccessibilityNotice(onClicked: () -> Unit) {
     Card(
         onClick = onClicked,
         colors =
-            CardDefaults.cardColors().copy(
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-            ),
+        CardDefaults.cardColors().copy(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+        ),
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            Text("Tap here to activate Eink Center in Settings > Accessibility Services", fontWeight = FontWeight.Bold)
+            Text(
+                "Tap here to activate Eink Center in Settings > Accessibility Services",
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -100,9 +125,9 @@ private fun OverlayNotice(onClicked: () -> Unit) {
     Card(
         onClick = onClicked,
         colors =
-            CardDefaults.cardColors().copy(
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-            ),
+        CardDefaults.cardColors().copy(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+        ),
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(
@@ -119,10 +144,10 @@ fun EinkActivityScreenPreview() {
     HisenseTheme {
         EinkMainActivityScreen(
             apps =
-                listOf(
-                    EinkApp("com.hisense.einkservice", 0),
-                    EinkApp("com.google.services", 1),
-                ),
+            listOf(
+                EinkApp("com.hisense.einkservice", 0),
+                EinkApp("com.google.services", 1),
+            ),
             isOverlayGranted = true,
             isAccessibilityEnabled = true,
             onAccessibilityClicked = { -> },

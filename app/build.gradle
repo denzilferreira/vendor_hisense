@@ -22,10 +22,26 @@ android {
         }
     }
 
+    signingConfigs {
+        debug {
+            storeFile file('signing/debug.keystore')
+            storePassword 'android'
+            keyAlias      'androiddebugkey'
+            keyPassword   'android'
+        }
+        release {
+            storeFile file('signing/platform.keystore')
+            storePassword 'password'
+            keyAlias 'platform'
+            keyPassword 'password'
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {
@@ -51,21 +67,6 @@ android {
 
     configurations {
         all*.exclude group: 'com.intellij', module: 'annotations'
-    }
-
-    signingConfigs {
-        debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias      'androiddebugkey'
-            keyPassword   'android'
-        }
-        release {
-            storeFile file('platform.keystore')
-            storePassword 'password'
-            keyAlias 'platform'
-            keyPassword 'password'
-        }
     }
 }
 

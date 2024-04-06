@@ -7,7 +7,7 @@ import com.hisense.einkservice.services.EinkAccessibility
 
 class EinkClearReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val einkService = EinkAccessibility.service()
+        val einkService = EinkAccessibility.einkService()
         einkService.clearScreen()
     }
 }
