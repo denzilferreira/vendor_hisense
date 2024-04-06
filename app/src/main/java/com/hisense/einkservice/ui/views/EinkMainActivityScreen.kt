@@ -88,11 +88,11 @@ private fun AppsList(apps: List<EinkApp>) {
             EinkAppItemView(
                 item = item,
                 onSetNewSpeed = { newSpeed ->
-                    val repository = EinkAccessibility.getRepository(context)
-                    val einkApp = repository.getByPackageName(item.packageName)
-                    einkApp?.let {
-                        einkApp.preferredSpeed = newSpeed.getSpeed()
-                        CoroutineScope(Dispatchers.IO).launch {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val repository = EinkAccessibility.getRepository(context)
+                        val einkApp = repository.getByPackageName(item.packageName)
+                        einkApp?.let {
+                            einkApp.preferredSpeed = newSpeed.getSpeed()
                             repository.update(einkApp)
                         }
                     }
