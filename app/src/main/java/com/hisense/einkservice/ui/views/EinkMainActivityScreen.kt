@@ -38,16 +38,18 @@ fun EinkMainActivityScreen(
             TopAppBar(
                 title = {
                     Text("Eink Center", fontWeight = FontWeight.Bold)
-                }
+                },
             )
         },
         content = { innerPadding ->
-            Column(modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxSize(),
+            Column(
+                modifier =
+                    Modifier
+                        .padding(innerPadding)
+                        .padding(16.dp)
+                        .fillMaxSize(),
                 horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text("Welcome", style = MaterialTheme.typography.headlineSmall)
                 Text("This app will allow you to adjust the preferred refresh speed of the e-ink display per app.")
@@ -61,7 +63,7 @@ fun EinkMainActivityScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 Text("Copyright © 2021 Denzil Ferreira", style = MaterialTheme.typography.labelSmall)
             }
-        }
+        },
     )
 }
 
@@ -82,10 +84,11 @@ private fun AppsList(apps: List<EinkApp>) {
 private fun AccessibilityNotice(onClicked: () -> Unit) {
     Card(
         onClick = onClicked,
-        colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.errorContainer
-        )
-    ){
+        colors =
+            CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+            ),
+    ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text("Tap here to activate Eink Center in Settings > Accessibility Services", fontWeight = FontWeight.Bold)
         }
@@ -96,12 +99,16 @@ private fun AccessibilityNotice(onClicked: () -> Unit) {
 private fun OverlayNotice(onClicked: () -> Unit) {
     Card(
         onClick = onClicked,
-        colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.errorContainer
-        )
+        colors =
+            CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+            ),
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            Text("Tap here to grant overlay permission. We need it to show the speed selector on top of any app.", fontWeight = FontWeight.Bold)
+            Text(
+                "Tap here to grant overlay permission. We need it to show the speed selector on top of any app.",
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }
@@ -111,14 +118,15 @@ private fun OverlayNotice(onClicked: () -> Unit) {
 fun EinkActivityScreenPreview() {
     HisenseTheme {
         EinkMainActivityScreen(
-            apps = listOf(
-                EinkApp("com.hisense.einkservice", 0),
-                EinkApp("com.google.services", 1),
-            ),
+            apps =
+                listOf(
+                    EinkApp("com.hisense.einkservice", 0),
+                    EinkApp("com.google.services", 1),
+                ),
             isOverlayGranted = true,
             isAccessibilityEnabled = true,
             onAccessibilityClicked = { -> },
-            onOverlayClicked = { -> }
+            onOverlayClicked = { -> },
         )
     }
 }

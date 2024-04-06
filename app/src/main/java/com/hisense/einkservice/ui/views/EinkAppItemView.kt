@@ -3,7 +3,7 @@ package com.hisense.einkservice.ui.views
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import com.hisense.einkservice.EinkSpeed
+import com.hisense.einkservice.model.EinkSpeed
 import com.hisense.einkservice.model.EinkApp
 
 @Composable

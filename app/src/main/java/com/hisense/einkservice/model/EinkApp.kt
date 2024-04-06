@@ -6,5 +6,5 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "eink_apps")
 data class EinkApp(
     @PrimaryKey val packageName: String,
-    var preferredSpeed: Int
+    var preferredSpeed: Int,
 )

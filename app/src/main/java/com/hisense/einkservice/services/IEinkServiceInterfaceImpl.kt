@@ -1,12 +1,12 @@
-package com.hisense.einkservice
+package com.hisense.einkservice.services
 
 import android.util.Log
+import com.hisense.einkservice.IEinkServiceInterface
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
 class IEinkServiceInterfaceImpl : IEinkServiceInterface.Stub() {
-
     private val TAG = IEinkServiceInterfaceImpl::class.java.getSimpleName()
     private val EINK_PATH = "/sys/devices/platform/soc/soc:qcom,dsi-display-primary/"
 
@@ -20,7 +20,15 @@ class IEinkServiceInterfaceImpl : IEinkServiceInterface.Stub() {
         writeToFile("1", EINK_PATH + "epd_force_clear")
     }
 
-    private fun writeToFile(data: String, filename: String) {
+    override fun getCurrentSpeed(): Int {
+        val speed = readFromFile(EINK_PATH + "epd_display_mode")
+        return speed.toInt()
+    }
+
+    private fun writeToFile(
+        data: String,
+        filename: String,
+    ) {
         try {
             val file = File(filename)
             val stream = FileOutputStream(file)
@@ -30,5 +38,18 @@ class IEinkServiceInterfaceImpl : IEinkServiceInterface.Stub() {
         } catch (e: IOException) {
             Log.e(TAG, "File write failed: $e")
         }
+    }
+
+    private fun readFromFile(
+        filename: String,
+    ): String {
+        try {
+            val file = File(filename)
+            val stream = file.inputStream()
+            return stream.bufferedReader().use { it.readText() }
+        } catch (e: IOException) {
+            Log.e(TAG, "File read failed: $e")
+        }
+        return ""
     }
 }

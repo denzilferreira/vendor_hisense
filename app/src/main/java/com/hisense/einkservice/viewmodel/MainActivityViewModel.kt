@@ -8,12 +8,12 @@ import kotlinx.coroutines.flow.Flow
 
 class MainActivityViewModel(
     private val repository: EinkAppRepository,
-): ViewModel() {
+) : ViewModel() {
     val apps: Flow<List<EinkApp>> = repository.getAll()
 }
 
 class MainActivityViewModelFactory(
-    private val repository: EinkAppRepository
+    private val repository: EinkAppRepository,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MainActivityViewModel::class.java)) {

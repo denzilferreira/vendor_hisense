@@ -21,13 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.LifecycleEventObserver
+import com.hisense.einkservice.services.EinkAccessibility
 import com.hisense.einkservice.ui.theme.HisenseTheme
 import com.hisense.einkservice.ui.views.EinkMainActivityScreen
 import com.hisense.einkservice.viewmodel.MainActivityViewModel
 import com.hisense.einkservice.viewmodel.MainActivityViewModelFactory
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
             HisenseTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     EinkMainActivityScreen(
                         apps = apps,
@@ -61,21 +61,23 @@ class MainActivity : ComponentActivity() {
                             startActivity(
                                 Intent(
                                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                    Uri.parse("package:$packageName")
-                                )
+                                    Uri.parse("package:$packageName"),
+                                ),
                             )
-                        })
+                        },
+                    )
                 }
             }
 
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                        isOverlayGranted = Settings.canDrawOverlays(application)
-                        isAccessibilityEnabled = EinkAccessibility.isRunning
+                val observer =
+                    LifecycleEventObserver { _, event ->
+                        if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                            isOverlayGranted = Settings.canDrawOverlays(application)
+                            isAccessibilityEnabled = EinkAccessibility.isRunning
+                        }
                     }
-                }
 
                 lifecycleOwner.lifecycle.addObserver(observer)
 
@@ -96,6 +98,7 @@ private fun AppPreview() {
             isOverlayGranted = false,
             isAccessibilityEnabled = false,
             onAccessibilityClicked = { -> },
-            onOverlayClicked = { -> })
+            onOverlayClicked = { -> },
+        )
     }
 }
