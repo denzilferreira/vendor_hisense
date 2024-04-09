@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -12,6 +13,8 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
@@ -20,6 +23,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.hisense.einkservice.MainActivity
 import com.hisense.einkservice.model.EinkApp
 import com.hisense.einkservice.model.EinkSpeed
 import com.hisense.einkservice.repository.EinkAppDatabase
@@ -41,6 +45,8 @@ class EinkAccessibility : AccessibilityService() {
 
     private var currentApp: String = ""
 
+    private var lastClickTimestamp: Long = 0
+
     private val overlayParams =
         WindowManager.LayoutParams().apply {
             type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
@@ -55,6 +61,10 @@ class EinkAccessibility : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+
+            // ignore Eink Center overlay
+            if (event.packageName.toString() == applicationContext.packageName) return;
+
             currentApp = event.packageName.toString()
 
             if (currentApp.isNotEmpty()) {
@@ -69,16 +79,42 @@ class EinkAccessibility : AccessibilityService() {
     }
 
     override fun onKeyEvent(event: KeyEvent?): Boolean {
-        if (event?.action == KeyEvent.ACTION_DOWN && event.scanCode == 766) {
-            einkService.clearScreen()
+        if (!::overlayView.isInitialized) {
+            setupOverlay()
+        }
 
-            if (!::overlayView.isInitialized) {
-                setupOverlay()
+        val duration = System.currentTimeMillis() - lastClickTimestamp
+        Log.d("EinkAccessibility", "Key event detected: ${event?.action.toString()} $duration")
+
+        if (event?.action == KeyEvent.ACTION_DOWN && event.scanCode == 766) {
+            if (lastClickTimestamp > 0 && System.currentTimeMillis() - lastClickTimestamp < 300) {
+                Log.d("EinkAccessibility", "Double click detected")
+                overlayView.visibility = View.VISIBLE
+                lastClickTimestamp = 0
+                return true
+            }
+        } else if (event?.action == KeyEvent.ACTION_UP && event.scanCode == 766) {
+            if (lastClickTimestamp > 0 && System.currentTimeMillis() - lastClickTimestamp > 500) {
+                Log.d("EinkAccessibility", "Long press detected")
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                startActivity(intent)
+
+                lastClickTimestamp = 0
+
+                return true
             }
 
-            overlayView.visibility = View.VISIBLE
-            return true
+            if (lastClickTimestamp > 0 && System.currentTimeMillis() - lastClickTimestamp < 200) {
+                Log.d("EinkAccessibility", "Single click detected")
+                einkService.clearScreen()
+
+                lastClickTimestamp = 0
+            }
         }
+
+        lastClickTimestamp = System.currentTimeMillis()
+
         return super.onKeyEvent(event)
     }
 
@@ -91,7 +127,11 @@ class EinkAccessibility : AccessibilityService() {
         overlayView =
             ComposeView(this).apply {
                 setContent {
+
+                    val currentSpeed = remember { mutableStateOf(EinkSpeed.fromSpeed(einkService.currentSpeed)) }
+
                     EinkOverlay(
+                        currentSpeed = currentSpeed.value,
                         onClear = {
                             setSpeedForApp(currentApp, EinkSpeed.CLEAR.getSpeed())
                         },
@@ -109,21 +149,16 @@ class EinkAccessibility : AccessibilityService() {
             }
 
         overlayView.setOnTouchListener(
-            object : View.OnTouchListener {
-                override fun onTouch(
-                    view: View?,
-                    event: MotionEvent?,
-                ): Boolean {
-                    event?.let {
-                        if (event.action == MotionEvent.ACTION_OUTSIDE) {
-                            overlayView.visibility = View.GONE
-                            view?.performClick()
-                            return true
-                        }
+            View.OnTouchListener { view, event ->
+                event?.let {
+                    if (event.action == MotionEvent.ACTION_OUTSIDE) {
+                        overlayView.visibility = View.GONE
+                        view?.performClick()
+                        return@OnTouchListener true
                     }
-                    view?.performClick()
-                    return true
                 }
+                view?.performClick()
+                true
             },
         )
 
@@ -159,9 +194,11 @@ class EinkAccessibility : AccessibilityService() {
                 repository.insert(newApp)
             }
             einkService.setSpeed(speed)
-        }
 
-        overlayView.visibility = View.GONE
+            launch(Dispatchers.Main) {
+                overlayView.visibility = View.GONE
+            }
+        }
     }
 
     override fun onStartCommand(
@@ -204,6 +241,7 @@ class EinkAccessibility : AccessibilityService() {
 private fun OverlayPreview() {
     HisenseTheme {
         EinkOverlay(
+            currentSpeed = EinkSpeed.SMOOTH,
             onClear = { -> },
             onBalanced = { -> },
             onSmooth = { -> },

@@ -7,7 +7,7 @@ import com.hisense.einkservice.repository.EinkAppRepository
 import kotlinx.coroutines.flow.Flow
 
 class MainActivityViewModel(
-    private val repository: EinkAppRepository,
+    repository: EinkAppRepository,
 ) : ViewModel() {
     val apps: Flow<List<EinkApp>> = repository.getAll()
 }

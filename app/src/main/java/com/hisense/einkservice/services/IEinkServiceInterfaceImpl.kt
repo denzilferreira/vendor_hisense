@@ -22,7 +22,7 @@ class IEinkServiceInterfaceImpl : IEinkServiceInterface.Stub() {
 
     override fun getCurrentSpeed(): Int {
         val speed = readFromFile(EINK_PATH + "epd_display_mode")
-        return speed.toInt()
+        return speed.filter { it.isDigit() }.toInt()
     }
 
     private fun writeToFile(
