@@ -1,9 +1,12 @@
 package com.hisense.einkservice.ui.views
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,23 +45,29 @@ fun EinkAppItemView(
         packageInfo.applicationInfo.loadLabel(packageManager).toString()
     }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(
-            modifier = Modifier.size(32.dp),
-            painter = appIcon,
-            contentDescription = appName,
-            contentScale = ContentScale.Fit,
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        MiniSpeedController(
-            selected = EinkSpeed.fromSpeed(item.preferredSpeed),
-            onClear = { onSetNewSpeed(EinkSpeed.CLEAR) },
-            onBalanced = { onSetNewSpeed(EinkSpeed.BALANCED) },
-            onSmooth = { onSetNewSpeed(EinkSpeed.SMOOTH) },
-            onFast = { onSetNewSpeed(EinkSpeed.FAST) },
-        )
+    Card {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Image(
+                    modifier = Modifier.size(32.dp),
+                    painter = appIcon,
+                    contentDescription = appName,
+                    contentScale = ContentScale.Fit,
+                )
+                Text(text = appName, style = MaterialTheme.typography.labelSmall)
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            MiniSpeedController(
+                selected = EinkSpeed.fromSpeed(item.preferredSpeed),
+                onClear = { onSetNewSpeed(EinkSpeed.CLEAR) },
+                onBalanced = { onSetNewSpeed(EinkSpeed.BALANCED) },
+                onSmooth = { onSetNewSpeed(EinkSpeed.SMOOTH) },
+                onFast = { onSetNewSpeed(EinkSpeed.FAST) },
+            )
+        }
     }
 }
 

@@ -20,6 +20,7 @@ import com.hisense.einkservice.ui.theme.HisenseTheme
 
 @Composable
 fun EinkOverlay(
+    modifier: Modifier = Modifier,
     currentSpeed: EinkSpeed,
     onClear: () -> Unit,
     onBalanced: () -> Unit,
@@ -41,7 +42,7 @@ fun EinkOverlay(
     )
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(Color.White),
         horizontalArrangement = Arrangement.SpaceAround,

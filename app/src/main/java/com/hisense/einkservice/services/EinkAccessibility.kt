@@ -9,14 +9,19 @@ import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
@@ -43,6 +48,7 @@ class EinkAccessibility : AccessibilityService() {
     private lateinit var overlayView: View
     private lateinit var repository: EinkAppRepository
 
+    private var lastApp: String = ""
     private var currentApp: String = ""
 
     private var lastClickTimestamp: Long = 0
@@ -56,16 +62,17 @@ class EinkAccessibility : AccessibilityService() {
             height = WindowManager.LayoutParams.WRAP_CONTENT
             gravity = Gravity.BOTTOM
             format = PixelFormat.TRANSPARENT
-            y = 100
         }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-
-            // ignore Eink Center overlay
-            if (event.packageName.toString() == applicationContext.packageName) return;
+            // ignore OS pop-ups which don't have package name
+            if (event.packageName == null) return
 
             currentApp = event.packageName.toString()
+
+            // ignore keyboard pop-ups inside the same app or notification tray expanded
+            if (lastApp == currentApp) return
 
             if (currentApp.isNotEmpty()) {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -74,6 +81,8 @@ class EinkAccessibility : AccessibilityService() {
                         einkService.setSpeed(einkApp.preferredSpeed)
                     }
                 }
+
+                lastApp = currentApp
             }
         }
     }
@@ -131,6 +140,7 @@ class EinkAccessibility : AccessibilityService() {
                     val currentSpeed = remember { mutableStateOf(EinkSpeed.fromSpeed(einkService.currentSpeed)) }
 
                     EinkOverlay(
+                        modifier = Modifier.getBottomPadding(),
                         currentSpeed = currentSpeed.value,
                         onClear = {
                             setSpeedForApp(currentApp, EinkSpeed.CLEAR.getSpeed())
@@ -234,6 +244,14 @@ class EinkAccessibility : AccessibilityService() {
 
         fun einkService() = IEinkServiceInterfaceImpl()
     }
+}
+
+@Composable
+fun Modifier.getBottomPadding(): Modifier {
+    val view = LocalView.current
+    val insets = remember { view.rootWindowInsets }
+    val bottom = insets?.getInsets(WindowInsets.Type.navigationBars())?.bottom ?: 0
+    return this.padding(bottom = bottom.dp)
 }
 
 @Preview(showBackground = true, showSystemUi = true)
