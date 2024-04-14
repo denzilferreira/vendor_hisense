@@ -1,4 +1,4 @@
-package com.hisense.einkservice
+package com.hisense.einkservice.broadcasts
 
 import android.content.BroadcastReceiver
 import android.content.Context

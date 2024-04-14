@@ -34,7 +34,13 @@ fun EinkAppItemView(
 ) {
     val context = LocalContext.current
     val packageManager = context.packageManager
-    val packageInfo = packageManager.getPackageInfo(item.packageName, 0)
+    lateinit var packageInfo: android.content.pm.PackageInfo
+
+    try {
+        packageInfo = packageManager.getPackageInfo(item.packageName, 0)
+    } catch (e: Exception) {
+        return
+    }
 
     val appIcon = remember {
         val drawable = packageInfo.applicationInfo.loadIcon(packageManager)

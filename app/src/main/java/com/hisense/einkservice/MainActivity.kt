@@ -97,8 +97,8 @@ private fun AppPreview() {
             apps = emptyList(),
             isOverlayGranted = false,
             isAccessibilityEnabled = false,
-            onAccessibilityClicked = { -> },
-            onOverlayClicked = { -> },
+            onAccessibilityClicked = { },
+            onOverlayClicked = { },
         )
     }
 }
