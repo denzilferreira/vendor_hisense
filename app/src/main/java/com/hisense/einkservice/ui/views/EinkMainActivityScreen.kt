@@ -19,9 +19,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.hisense.einkservice.R
 import com.hisense.einkservice.model.EinkApp
 import com.hisense.einkservice.services.EinkAccessibility
 import com.hisense.einkservice.ui.theme.HisenseTheme
@@ -64,10 +66,13 @@ fun EinkMainActivityScreen(
                 if (!isAccessibilityEnabled) {
                     AccessibilityNotice(onClicked = onAccessibilityClicked)
                 }
+                if (apps.isEmpty()) {
+                    TutorialNotice()
+                }
                 AppsList(apps = apps)
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    "Copyright © 2021 Denzil Ferreira",
+                    "Made with ❤\uFE0F - Denzil Ferreira, and you? \uD83D\uDE09",
                     style = MaterialTheme.typography.labelSmall
                 )
             }
@@ -112,6 +117,7 @@ private fun AppsList(apps: List<EinkApp>) {
 @Composable
 private fun AccessibilityNotice(onClicked: () -> Unit) {
     Card(
+        modifier = Modifier.fillMaxWidth(),
         onClick = onClicked,
         colors =
         CardDefaults.cardColors().copy(
@@ -130,6 +136,7 @@ private fun AccessibilityNotice(onClicked: () -> Unit) {
 @Composable
 private fun OverlayNotice(onClicked: () -> Unit) {
     Card(
+        modifier = Modifier.fillMaxWidth(),
         onClick = onClicked,
         colors =
         CardDefaults.cardColors().copy(
@@ -145,16 +152,32 @@ private fun OverlayNotice(onClicked: () -> Unit) {
     }
 }
 
+@Composable
+private fun TutorialNotice() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors =
+        CardDefaults.cardColors().copy(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            Text(
+                "No apps yet \uD83D\uDE2D. Let's change that!",
+                fontWeight = FontWeight.Bold,
+            )
+            Text(stringResource(id = R.string.eink_tutorial_text), style = MaterialTheme.typography.bodySmall)
+            Text("This tutorial will disappear once you add an app. Let's GO! \uD83D\uDE80", style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun EinkActivityScreenPreview() {
     HisenseTheme {
         EinkMainActivityScreen(
-            apps =
-            listOf(
-                EinkApp("com.hisense.einkservice", 0),
-                EinkApp("com.google.services", 1),
-            ),
+            apps = emptyList(),
             isOverlayGranted = true,
             isAccessibilityEnabled = true,
             onAccessibilityClicked = { },

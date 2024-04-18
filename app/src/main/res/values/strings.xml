@@ -1,4 +1,17 @@
 <resources>
     <string name="app_name">Eink Center</string>
-    <string name="eink_accessibility_service">Eink Service</string>
+    <string name="eink_accessibility_service">
+        This service is responsible to showing an overlay to set and restore a refresh speed for the eink display.\n
+        Eink Center is open-source. You can check the source code at \n
+        https://github.com/denzilferreira/vendor_hisense
+    </string>
+    <string name="eink_tutorial_text">
+        - Press Eink button once quickly to refresh.\n
+        - Open an app, press twice quickly to select and save an app speed.\n
+        - Hold and release for 1 second to open Eink Center.\n
+        - Eink Center restores automatically the last speed you set for an app.\n
+        - Set a default speed for unknown apps by setting the speed of Eink Center.\n
+        - Change the default speed of an app by selecting the speed of the app here.\n
+        - Swipe to remove an app from the list.\n
+    </string>
 </resources>
