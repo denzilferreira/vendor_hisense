@@ -12,11 +12,15 @@ class EinkAppRepositoryImpl(private val einkAppDao: EinkAppDao) : EinkAppReposit
         einkAppDao.update(einkApp)
     }
 
-    override fun getAll(): Flow<List<EinkApp>> {
+    override suspend fun delete(einkApp: EinkApp) {
+        einkAppDao.delete(einkApp)
+    }
+
+    override suspend fun getAll(): List<EinkApp> {
         return einkAppDao.getAll()
     }
 
-    override fun getByPackageName(packageName: String): EinkApp? {
+    override suspend fun getByPackageName(packageName: String): EinkApp? {
         return einkAppDao.getByPackageName(packageName)
     }
 }

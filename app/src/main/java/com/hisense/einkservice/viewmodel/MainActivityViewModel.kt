@@ -2,14 +2,31 @@ package com.hisense.einkservice.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.hisense.einkservice.model.EinkApp
 import com.hisense.einkservice.repository.EinkAppRepository
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class MainActivityViewModel(
-    repository: EinkAppRepository,
+    private val repository: EinkAppRepository,
 ) : ViewModel() {
-    val apps: Flow<List<EinkApp>> = repository.getAll()
+    private val _apps = MutableStateFlow<List<EinkApp>>(emptyList())
+    var apps: StateFlow<List<EinkApp>> = _apps
+
+    init {
+        viewModelScope.launch {
+            _apps.value = repository.getAll()
+        }
+    }
+
+    fun removeApp(app: EinkApp) {
+        viewModelScope.launch {
+            repository.delete(app)
+            _apps.value = repository.getAll()
+        }
+    }
 }
 
 class MainActivityViewModelFactory(

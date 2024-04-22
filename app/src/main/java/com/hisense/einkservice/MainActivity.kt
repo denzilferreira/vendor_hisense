@@ -39,10 +39,10 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(false)
             }
 
-            val repository = EinkAccessibility.getRepository(applicationContext)
             val viewModel by viewModels<MainActivityViewModel> {
-                MainActivityViewModelFactory(repository)
+                MainActivityViewModelFactory(EinkAccessibility.getRepository(applicationContext))
             }
+
             val apps by viewModel.apps.collectAsState(initial = emptyList())
 
             HisenseTheme {
@@ -64,6 +64,9 @@ class MainActivity : ComponentActivity() {
                                     Uri.parse("package:$packageName"),
                                 ),
                             )
+                        },
+                        onSwipe = { app ->
+                            viewModel.removeApp(app)
                         },
                     )
                 }
@@ -99,6 +102,7 @@ private fun AppPreview() {
             isAccessibilityEnabled = false,
             onAccessibilityClicked = { },
             onOverlayClicked = { },
+            onSwipe = { },
         )
     }
 }

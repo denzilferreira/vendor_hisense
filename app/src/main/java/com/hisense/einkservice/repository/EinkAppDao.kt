@@ -1,6 +1,7 @@
 package com.hisense.einkservice.repository
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -16,9 +17,12 @@ interface EinkAppDao {
     @Update
     suspend fun update(einkApp: EinkApp)
 
+    @Delete
+    suspend fun delete(einkApp: EinkApp)
+
     @Query("SELECT * FROM eink_apps")
-    fun getAll(): Flow<List<EinkApp>>
+    suspend fun getAll(): List<EinkApp>
 
     @Query("SELECT * FROM eink_apps WHERE packageName = :packageName")
-    fun getByPackageName(packageName: String): EinkApp?
+    suspend fun getByPackageName(packageName: String): EinkApp?
 }
