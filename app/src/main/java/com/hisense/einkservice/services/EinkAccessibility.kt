@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
@@ -31,6 +34,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.hisense.einkservice.MainActivity
 import com.hisense.einkservice.model.EinkApp
 import com.hisense.einkservice.model.EinkSpeed
+import com.hisense.einkservice.observers.NightLightSettingObserver
 import com.hisense.einkservice.repository.EinkAppDatabase
 import com.hisense.einkservice.repository.EinkAppRepository
 import com.hisense.einkservice.repository.EinkAppRepositoryImpl
@@ -48,6 +52,7 @@ class EinkAccessibility : AccessibilityService() {
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
     private lateinit var repository: EinkAppRepository
+    private lateinit var nightLightObserver: NightLightSettingObserver
 
     private var lastClickTimestamp: Long = 0
 
@@ -230,6 +235,15 @@ class EinkAccessibility : AccessibilityService() {
         instance = WeakReference(this)
         isRunning = true
         repository = getRepository(applicationContext)
+
+        registerNightLightObserver()
+    }
+
+    private fun registerNightLightObserver() {
+        val uri = Settings.Secure.getUriFor("night_display_activated")
+        val handler  = Handler(Looper.getMainLooper())
+        nightLightObserver = NightLightSettingObserver(handler, applicationContext)
+        applicationContext.contentResolver.registerContentObserver(uri, false, nightLightObserver)
     }
 
     override fun onInterrupt() {
@@ -240,6 +254,7 @@ class EinkAccessibility : AccessibilityService() {
         super.onDestroy()
         instance = null
         isRunning = false
+        applicationContext.contentResolver.unregisterContentObserver(nightLightObserver)
     }
 
     companion object {
