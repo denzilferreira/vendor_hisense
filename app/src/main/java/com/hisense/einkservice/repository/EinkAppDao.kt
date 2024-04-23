@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.hisense.einkservice.model.EinkApp
 import kotlinx.coroutines.flow.Flow
@@ -20,9 +21,11 @@ interface EinkAppDao {
     @Delete
     suspend fun delete(einkApp: EinkApp)
 
+    @Transaction
     @Query("SELECT * FROM eink_apps")
-    suspend fun getAll(): List<EinkApp>
+    fun getAll(): Flow<List<EinkApp>>
 
+    @Transaction
     @Query("SELECT * FROM eink_apps WHERE packageName = :packageName")
     suspend fun getByPackageName(packageName: String): EinkApp?
 }

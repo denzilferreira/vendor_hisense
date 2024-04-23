@@ -10,7 +10,7 @@ interface EinkAppRepository {
 
     suspend fun delete(einkApp: EinkApp)
 
-    suspend fun getAll(): List<EinkApp>
+    fun getAll(): Flow<List<EinkApp>>
 
     suspend fun getByPackageName(packageName: String): EinkApp?
 }

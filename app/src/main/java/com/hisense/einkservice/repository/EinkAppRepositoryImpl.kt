@@ -16,7 +16,7 @@ class EinkAppRepositoryImpl(private val einkAppDao: EinkAppDao) : EinkAppReposit
         einkAppDao.delete(einkApp)
     }
 
-    override suspend fun getAll(): List<EinkApp> {
+    override fun getAll(): Flow<List<EinkApp>> {
         return einkAppDao.getAll()
     }
 
