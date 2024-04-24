@@ -25,6 +25,24 @@ class IEinkServiceInterfaceImpl : IEinkServiceInterface.Stub() {
         return speed.filter { it.isDigit() }.toInt()
     }
 
+    override fun setTemperature(isNightLight: Boolean, brightness: Int) {
+        // TODO
+    }
+
+    override fun isNightLight(): Boolean {
+        // TODO
+        return false
+    }
+
+    override fun getBrightness(): Int {
+        // TODO
+        return 0
+    }
+
+    override fun setLockedScreen(lockscreen: CharArray?) {
+        // TODO
+    }
+
     private fun writeToFile(
         data: String,
         filename: String,

@@ -34,6 +34,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.hisense.einkservice.MainActivity
 import com.hisense.einkservice.model.EinkApp
 import com.hisense.einkservice.model.EinkSpeed
+import com.hisense.einkservice.observers.NightLightIntensityObserver
 import com.hisense.einkservice.observers.NightLightSettingObserver
 import com.hisense.einkservice.repository.EinkAppDatabase
 import com.hisense.einkservice.repository.EinkAppRepository
@@ -52,7 +53,9 @@ class EinkAccessibility : AccessibilityService() {
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: View
     private lateinit var repository: EinkAppRepository
+
     private lateinit var nightLightObserver: NightLightSettingObserver
+    private lateinit var nightLightIntensityObserver: NightLightIntensityObserver
 
     private var lastClickTimestamp: Long = 0
 
@@ -237,6 +240,17 @@ class EinkAccessibility : AccessibilityService() {
         repository = getRepository(applicationContext)
 
         registerNightLightObserver()
+        registerNightLightIntensityObserver()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            nightLightObserver.isEnabled.collect { isEnabled ->
+                if (isEnabled) {
+                    //einkService.setTemperature(isNightLight = true, brightness = 0)
+                } else {
+                    //einkService.setTemperature(isNightLight = false, brightness = 0)
+                }
+            }
+        }
     }
 
     private fun registerNightLightObserver() {
@@ -244,6 +258,13 @@ class EinkAccessibility : AccessibilityService() {
         val handler  = Handler(Looper.getMainLooper())
         nightLightObserver = NightLightSettingObserver(handler, applicationContext)
         applicationContext.contentResolver.registerContentObserver(uri, false, nightLightObserver)
+    }
+
+    private fun registerNightLightIntensityObserver() {
+        val uri = Settings.Secure.getUriFor("night_display_color_temperature")
+        val handler  = Handler(Looper.getMainLooper())
+        val nightLightIntensityObserver = NightLightIntensityObserver(handler, applicationContext)
+        applicationContext.contentResolver.registerContentObserver(uri, false, nightLightIntensityObserver)
     }
 
     override fun onInterrupt() {
@@ -255,6 +276,7 @@ class EinkAccessibility : AccessibilityService() {
         instance = null
         isRunning = false
         applicationContext.contentResolver.unregisterContentObserver(nightLightObserver)
+        applicationContext.contentResolver.unregisterContentObserver(nightLightIntensityObserver)
     }
 
     companion object {
