@@ -2,6 +2,7 @@ package com.hisense.einkservice.services
 
 import android.util.Log
 import com.hisense.einkservice.IEinkServiceInterface
+import com.hisense.einkservice.observers.NightLightIntensityObserver
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -9,6 +10,9 @@ import java.io.IOException
 class IEinkServiceInterfaceImpl : IEinkServiceInterface.Stub() {
     private val TAG = IEinkServiceInterfaceImpl::class.java.getSimpleName()
     private val EINK_PATH = "/sys/devices/platform/soc/soc:qcom,dsi-display-primary/"
+
+    private val YELLOW_LED = "/sys/class/backlight/aw99703-bl-1/brightness"
+    private val WHITE_LED = "/sys/class/backlight/aw99703-bl-2/brightness"
 
     override fun setSpeed(speed: Int) {
         Log.i(TAG, "setting speed mode: $speed")
@@ -26,17 +30,38 @@ class IEinkServiceInterfaceImpl : IEinkServiceInterface.Stub() {
     }
 
     override fun setTemperature(isNightLight: Boolean, brightness: Int) {
-        // TODO
+        val originalScale = NightLightIntensityObserver.originalScale(brightness)
+        if (isNightLight) {
+            setNightLight(true)
+            writeToFile(originalScale.toString(), YELLOW_LED)
+        } else {
+            setNightLight(false)
+            writeToFile(originalScale.toString(), WHITE_LED)
+        }
+    }
+
+    private fun setNightLight(enabled: Boolean) {
+        if (enabled) {
+            writeToFile(0.toString(), WHITE_LED)
+        } else {
+            writeToFile(0.toString(), YELLOW_LED)
+        }
     }
 
     override fun isNightLight(): Boolean {
-        // TODO
-        return false
+        val whiteBrightness = readFromFile(WHITE_LED).filter { it.isDigit() }.toInt()
+        val yellowBrightness = readFromFile(YELLOW_LED).filter { it.isDigit() }.toInt()
+        return whiteBrightness == 0 && yellowBrightness > 0
     }
 
     override fun getBrightness(): Int {
-        // TODO
-        return 0
+        val whiteBrightness = readFromFile(WHITE_LED).filter { it.isDigit() }.toInt()
+        val yellowBrightness = readFromFile(YELLOW_LED).filter { it.isDigit() }.toInt()
+        return if (whiteBrightness == 0) {
+            yellowBrightness
+        } else {
+            whiteBrightness
+        }
     }
 
     override fun setLockedScreen(lockscreen: CharArray?) {

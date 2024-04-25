@@ -5,11 +5,6 @@ import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
 import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import com.hisense.einkservice.services.EinkAccessibility
-import com.hisense.einkservice.services.IEinkServiceInterfaceImpl
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -17,9 +12,6 @@ class NightLightIntensityObserver(
     handler: Handler,
     private val context: Context,
 ) : ContentObserver(handler) {
-
-    private val MIN = 4082
-    private val MAX = 2596
 
     private val _intensity = MutableStateFlow(0)
     val intensity: StateFlow<Int> = _intensity
@@ -39,12 +31,22 @@ class NightLightIntensityObserver(
     private fun getNightDisplayIntensity(context: Context): Int {
         val contentResolver = context.contentResolver
         val currentValue = android.provider.Settings.Secure.getInt(contentResolver, "night_display_color_temperature", 0)
-        return scaleValue(MIN, MAX, currentValue)
+        return scaleValue(currentValue)
     }
 
-    private fun scaleValue(min: Int, max: Int, currentValue: Int): Int {
-        val originalRange = min - max
-        val scaledValue = ((currentValue - max).toDouble() / originalRange) * 100
+    private fun scaleValue(currentValue: Int): Int {
+        val originalRange = MIN_BRIGHTNESS_VALUE - MAX_BRIGHTNESS_VALUE
+        val scaledValue = ((currentValue - MAX_BRIGHTNESS_VALUE).toDouble() / originalRange) * 100
         return (100 - scaledValue).toInt()
+    }
+
+    companion object {
+        private val MIN_BRIGHTNESS_VALUE = 4082
+        private val MAX_BRIGHTNESS_VALUE = 2596
+        fun originalScale(scaledValue: Int): Int {
+            val originalRange = MIN_BRIGHTNESS_VALUE - MAX_BRIGHTNESS_VALUE
+            val currentValue = (100 - scaledValue).toDouble()
+            return (currentValue / 100 * originalRange + MAX_BRIGHTNESS_VALUE).toInt()
+        }
     }
 }

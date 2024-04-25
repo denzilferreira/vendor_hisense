@@ -101,11 +101,13 @@ private fun AppsList(
     val context = LocalContext.current
 
     LazyColumn(
-        modifier = Modifier.fillMaxWidth().animateContentSize(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         userScrollEnabled = true,
     ) {
-        items(apps.size, { index -> apps[index].packageName } ) { index ->
+        items(apps.size, { index -> apps[index].packageName }) { index ->
             val item = apps[index]
             val dismissState = rememberSwipeToDismissBoxState(
                 confirmValueChange = {

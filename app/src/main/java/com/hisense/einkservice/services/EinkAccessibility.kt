@@ -44,6 +44,7 @@ import com.hisense.einkservice.ui.views.EinkOverlay
 import com.hisense.einkservice.ui.views.MyLifecycleOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
@@ -243,28 +244,37 @@ class EinkAccessibility : AccessibilityService() {
         registerNightLightIntensityObserver()
 
         CoroutineScope(Dispatchers.IO).launch {
-            nightLightObserver.isEnabled.collect { isEnabled ->
-                if (isEnabled) {
-                    //einkService.setTemperature(isNightLight = true, brightness = 0)
-                } else {
-                    //einkService.setTemperature(isNightLight = false, brightness = 0)
-                }
+            combine(
+                nightLightObserver.isEnabled,
+                nightLightIntensityObserver.intensity
+            ) { isEnabled, intensity ->
+                Pair(isEnabled, intensity)
+            }.collect { (isEnabled, intensity) ->
+                einkService.setTemperature(isNightLight = isEnabled, brightness = intensity)
             }
         }
     }
 
     private fun registerNightLightObserver() {
         val uri = Settings.Secure.getUriFor("night_display_activated")
-        val handler  = Handler(Looper.getMainLooper())
+        val handler = Handler(Looper.getMainLooper())
         nightLightObserver = NightLightSettingObserver(handler, applicationContext)
-        applicationContext.contentResolver.registerContentObserver(uri, false, nightLightObserver)
+        applicationContext.contentResolver.registerContentObserver(
+            uri,
+            false,
+            nightLightObserver
+        )
     }
 
     private fun registerNightLightIntensityObserver() {
         val uri = Settings.Secure.getUriFor("night_display_color_temperature")
-        val handler  = Handler(Looper.getMainLooper())
-        val nightLightIntensityObserver = NightLightIntensityObserver(handler, applicationContext)
-        applicationContext.contentResolver.registerContentObserver(uri, false, nightLightIntensityObserver)
+        val handler = Handler(Looper.getMainLooper())
+        nightLightIntensityObserver = NightLightIntensityObserver(handler, applicationContext)
+        applicationContext.contentResolver.registerContentObserver(
+            uri,
+            false,
+            nightLightIntensityObserver
+        )
     }
 
     override fun onInterrupt() {

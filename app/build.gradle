@@ -82,6 +82,7 @@ dependencies {
     implementation libs.androidx.lifecycle.viewmodel.compose
     implementation libs.androidx.room.runtime
     implementation libs.accompanist.swiperefresh
+    implementation libs.androidx.navigation.compose
     kapt libs.androidx.room.compiler
     implementation libs.androidx.room.ktx
     testImplementation libs.junit
