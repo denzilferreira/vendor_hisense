@@ -4,7 +4,7 @@ android_app_import {
 
     apk: "app/release/app-release.apk",
 
-    presigned: true,
+    presigned: false,
 
     privileged: true,
 
