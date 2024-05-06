@@ -96,11 +96,6 @@ class EinkAccessibility : AccessibilityService() {
 
     override fun onKeyEvent(event: KeyEvent?): Boolean {
 
-        // We don't want to show overlay for LineageOS 21 - sperhoooo has his own implementation
-        if (Build.VERSION.SDK_INT == 34) {
-            return super.onKeyEvent(event)
-        }
-
         if (!::overlayView.isInitialized) {
             setupOverlay()
         }
