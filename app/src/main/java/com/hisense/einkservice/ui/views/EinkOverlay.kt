@@ -96,20 +96,6 @@ fun EinkOverlay(
             }
         }
     }
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                speed = EinkSpeed.fromSpeed(EinkAccessibility.einkService().currentSpeed)
-            }
-        }
-
-        lifecycleOwner.lifecycle.addObserver(observer)
-
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
 }
 
 @Composable
